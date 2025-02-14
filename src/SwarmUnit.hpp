@@ -1,3 +1,4 @@
+#pragma once
 #include "Params.hpp"
 #include <type_traits>
 namespace swarm {
