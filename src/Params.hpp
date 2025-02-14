@@ -6,7 +6,6 @@ namespace swarm {
  */
 struct IParams {
   IParams();
-  IParams(auto...);
 };
 
 } // namespace swarm

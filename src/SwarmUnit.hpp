@@ -24,6 +24,7 @@ template <class ParamsT, class SwarmUnitT> class IUnitComponent {
   SwarmUnitT *_unit;
 
 public:
+  IUnitComponent(SwarmUnitT *const);
   IUnitComponent(SwarmUnitT *const, const ParamsT &);
   /**
    * @brief init component, then can iteration

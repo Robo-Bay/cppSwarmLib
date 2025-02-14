@@ -5,6 +5,9 @@ template <class ParmsT, class SwarmUnitT>
 IUnitComponent<ParmsT, SwarmUnitT>::IUnitComponent(SwarmUnitT *const unit,
                                                    const ParmsT &params)
     : _params(params), _unit(unit) {}
+template <class ParmsT, class SwarmUnitT>
+IUnitComponent<ParmsT, SwarmUnitT>::IUnitComponent(SwarmUnitT *const unit)
+    : _unit(unit) {}
 
 template <class ParmsT, class SwarmUnitT>
 IUnitComponent<ParmsT, SwarmUnitT>::~IUnitComponent() = default;
@@ -19,14 +22,17 @@ template <class UnitParamsT, class CommunicationCT, class TaskManagerCT,
           class ExecutorCT>
 BasicSwarmUnit<UnitParamsT, CommunicationCT, TaskManagerCT,
                ExecutorCT>::BasicSwarmUnit()
-    : _communicationC(*new CommunicationCT()),
-      _taskManagerC(*new TaskManagerCT()), _executorC(*new TaskManagerCT()) {}
+    : _communicationC(*new CommunicationCT(this)),
+      _taskManagerC(*new TaskManagerCT(this)),
+      _executorC(*new TaskManagerCT(this)) {}
 
 template <class UnitParamsT, class CommunicationCT, class TaskManagerCT,
           class ExecutorCT>
 BasicSwarmUnit<UnitParamsT, CommunicationCT, TaskManagerCT,
                ExecutorCT>::BasicSwarmUnit(const UnitParamsT &params)
-    : _params(params) {}
+    : _params(params), _communicationC(*new CommunicationCT(this)),
+      _taskManagerC(*new TaskManagerCT(this)),
+      _executorC(*new ExecutorCT(this)) {}
 
 template <class UnitParamsT, class CommunicationCT, class TaskManagerCT,
           class ExecutorCT>
@@ -35,9 +41,9 @@ BasicSwarmUnit<UnitParamsT, CommunicationCT, TaskManagerCT,
                                            const CommunicationCT::ParamsT &cpar,
                                            const TaskManagerCT::ParamsT &tpar,
                                            const ExecutorCT::ParamsT &epar)
-    : _params(params), _communicationC(*new CommunicationCT(cpar)),
-      _taskManagerC(*new TaskManagerCT(tpar)),
-      _executorC(*new ExecutorCT(epar)) {}
+    : _params(params), _communicationC(*new CommunicationCT(this, cpar)),
+      _taskManagerC(*new TaskManagerCT(this, tpar)),
+      _executorC(*new ExecutorCT(this, epar)) {}
 
 template <class UnitParamsT, class CommunicationCT, class TaskManagerCT,
           class ExecutorCT>
