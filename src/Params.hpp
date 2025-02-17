@@ -6,6 +6,8 @@ namespace swarm {
  */
 struct IParams {
   IParams();
+  virtual ~IParams() = default;
 };
+using EmptyParams = IParams;
 
 } // namespace swarm

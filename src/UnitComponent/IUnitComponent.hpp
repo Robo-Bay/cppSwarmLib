@@ -39,4 +39,5 @@ public:
   virtual void iter() = 0;
   virtual ~IUnitComponent();
 };
+
 } // namespace swarm
