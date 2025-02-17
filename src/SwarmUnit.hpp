@@ -1,75 +1,11 @@
 #pragma once
-#include "Params.hpp"
+#include "UnitComponent/ICommunicationC.hpp"
+#include "UnitComponent/IExecutorC.hpp"
+#include "UnitComponent/ITaskManagerC.hpp"
+#include <memory>
 #include <type_traits>
 namespace swarm {
-template <class UnitParamsT, class CommunicationCT, class TaskManagerCT,
-          class ExecutorCT>
-class BasicSwarmUnit;
 
-/**
- * @brief The basic interface of the basic swarm unit component
- *
- */
-template <class ParamsT, class SwarmUnitT> class IUnitComponent {
-  static_assert(std::is_base_of<IParams, ParamsT>::value,
-                "Params must be derived of IParams");
-  static_assert(
-      std::is_base_of<BasicSwarmUnit<typename SwarmUnitT::UnitParamsT,
-                                     typename SwarmUnitT::CommunicationCT,
-                                     typename SwarmUnitT::TaskManagerCT,
-                                     typename SwarmUnitT::ExecutorCT>,
-                      SwarmUnitT>::value,
-      "SwarnUnitT must be derived of BasicSwarmUnit");
-  ParamsT _params;
-  SwarmUnitT *_unit;
-
-public:
-  IUnitComponent(SwarmUnitT *const);
-  IUnitComponent(SwarmUnitT *const, const ParamsT &);
-  /**
-   * @brief init component, then can iteration
-   *
-   */
-  virtual void init() = 0;
-  /**
-   * @brief do one iteration of swarm component
-   *
-   */
-  virtual void iter() = 0;
-  virtual ~IUnitComponent();
-};
-/**
- * @brief Interface of the communication swarm unit component. In this component
- * unit communicate with other units and swarm.
- *
- */
-template <class ParamsT, class SwarmUnitT>
-class ICommunicationUnitC : public IUnitComponent<ParamsT, SwarmUnitT> {
-public:
-  virtual ~ICommunicationUnitC();
-};
-
-/**
- * @brief Interface of the task manager swarm unit component. This module get,
- * decompose and manage the tasks from swarm or other units.
- *
- */
-template <class ParamsT, class SwarmUnitT>
-class ITaskManagerUnitC : public IUnitComponent<ParamsT, SwarmUnitT> {
-public:
-  virtual ~ITaskManagerUnitC();
-};
-
-/**
- * @brief Interface of the executive swarm unit module. This module is execute
- * tasks from task manager module.
- *
- */
-template <class ParamsT, class SwarmUnitT>
-class IExecutorUnitC : public IUnitComponent<ParamsT, SwarmUnitT> {
-public:
-  virtual ~IExecutorUnitC();
-};
 /**
  * @brief Interface of the basic swarm unit(agent)
  *
@@ -109,7 +45,6 @@ class BasicSwarmUnit {
           IExecutorUnitC<typename ExecutorCT::ParamsT, BasicSwarmUnit>,
           ExecutorCT>::value,
       "ExecutorCT must be derived from IExecutorUnitC<ParamsT, SwarmUnitT>");
-
   CommunicationCT &_communicationC;
   TaskManagerCT &_taskManagerC;
   ExecutorCT &_executorC;

@@ -1,22 +1,6 @@
 #include "SwarmUnit.hpp"
 using namespace swarm;
 
-template <class ParmsT, class SwarmUnitT>
-IUnitComponent<ParmsT, SwarmUnitT>::IUnitComponent(SwarmUnitT *const unit,
-                                                   const ParmsT &params)
-    : _params(params), _unit(unit) {}
-template <class ParmsT, class SwarmUnitT>
-IUnitComponent<ParmsT, SwarmUnitT>::IUnitComponent(SwarmUnitT *const unit)
-    : _unit(unit) {}
-
-template <class ParmsT, class SwarmUnitT>
-IUnitComponent<ParmsT, SwarmUnitT>::~IUnitComponent() = default;
-template <class ParmsT, class SwarmUnitT>
-ICommunicationUnitC<ParmsT, SwarmUnitT>::~ICommunicationUnitC() = default;
-template <class ParmsT, class SwarmUnitT>
-ITaskManagerUnitC<ParmsT, SwarmUnitT>::~ITaskManagerUnitC() = default;
-template <class ParmsT, class SwarmUnitT>
-IExecutorUnitC<ParmsT, SwarmUnitT>::~IExecutorUnitC() = default;
 
 template <class UnitParamsT, class CommunicationCT, class TaskManagerCT,
           class ExecutorCT>
