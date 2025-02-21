@@ -3,25 +3,27 @@
 #include "../SwarmUnit.hpp"
 #include <type_traits>
 namespace swarm {
+template <class UnitParamsT, template <class> class TaskManagerCTT,
+          template <class> class CommunicationCTT,
+          template <class> class ExecutorCTT>
+class BasicSwarmUnit;
 template <class SwarmUnitT> class EmptyUnitComponent;
 /**
  * @brief The basic interface of the basic swarm unit component
  *
  */
 template <class ParamsT, class SwarmUnitT> class IUnitComponent {
-  // static_assert(std::is_base_of<IParams, ParamsT>::value,
-  //               "Params must be derived of IParams");
-  // static_assert(
-  //     std::is_base_of<BasicSwarmUnit<typename SwarmUnitT::UnitParamsT,
-  //                                    SwarmUnitT::template CommunicationCT,
-  //                                    SwarmUnitT::template TaskManagerCT,
-  //                                    SwarmUnitT::template ExecutorCT>,
-  //                     SwarmUnitT>::value,
-  //     "SwarnUnitT must be derived of BasicSwarmUnit");
+  static_assert(std::is_base_of<IParams, ParamsT>::value,
+                "Params must be derived of IParams");
+
+  static_assert(std::is_base_of<typename SwarmUnitT::BasicSwarmUnit::UnitT,
+                                SwarmUnitT>::value,
+                "SwarmUnitT must be derived from BasicSwarmUnit");
   ParamsT _params;
   SwarmUnitT *_unit;
 
 public:
+  using _P = ParamsT;
   IUnitComponent(SwarmUnitT *u) : _unit(u) {};
   IUnitComponent(SwarmUnitT *u, const ParamsT &p) : _unit(u), _params(p) {}
   /**

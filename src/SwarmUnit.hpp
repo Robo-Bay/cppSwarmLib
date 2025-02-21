@@ -3,12 +3,10 @@
 #include "UnitComponent/ICommunicationC.hpp"
 #include "UnitComponent/IExecutorC.hpp"
 #include "UnitComponent/ITaskManagerC.hpp"
+#include <charconv>
+#include <cstdarg>
 #include <type_traits>
 namespace swarm {
-template <class ParamsT, class SwarmUnitT> class ICommunicationUnitC;
-template <class ParamsT, class SwarmUnitT> class IExecutorUnitC;
-template <class ParamsT, class SwarmUnitT> class ITaskManagerUnitC;
-
 /**
  * @brief Interface of the basic swarm unit(agent)
  *
@@ -26,13 +24,33 @@ class BasicSwarmUnit {
 public:
   using UnitT = BasicSwarmUnit<UnitParamsT, TaskManagerCTT, CommunicationCTT,
                                ExecutorCTT>;
+  template <class T> using _TMT = TaskManagerCTT<T>;
+  template <class T> using _CT = CommunicationCTT<T>;
+  template <class T> using _ET = TaskManagerCTT<T>;
   using _TaskManagerT = TaskManagerCTT<UnitT>;
   using _CommunicationT = CommunicationCTT<UnitT>;
   using _ExecutorT = ExecutorCTT<UnitT>;
+  using _UnitParamsT = UnitParamsT;
 
 private:
   static_assert(std::is_base_of<IParams, UnitParamsT>::value,
                 "UnitParams must be derived from IParams");
+  static_assert(
+      std::is_base_of<ITaskManagerUnitC<
+                          typename _TaskManagerT::ITaskManagerUnitC::_P, UnitT>,
+                      _TaskManagerT>::value,
+      "Template TaskManagerCTT must be derived from ITaskManagerUnitC");
+  static_assert(
+      std::is_base_of<
+          ICommunicationUnitC<typename _CommunicationT::ICommunicationUnitC::_P,
+                              UnitT>,
+          _CommunicationT>::value,
+      "Template CommunicationCTT must be derived from ICommunicationUnitC");
+  static_assert(
+      std::is_base_of<
+          IExecutorUnitC<typename _ExecutorT::IExecutorUnitC::_P, UnitT>,
+          _ExecutorT>::value,
+      "Template ExecutorCTT must be derived from IExecutorUnitC");
 
   _TaskManagerT *_taskManagerC;
   _CommunicationT *_communicationC;
