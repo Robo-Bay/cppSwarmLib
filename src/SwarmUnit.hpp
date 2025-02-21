@@ -3,12 +3,22 @@
 #include "UnitComponent/ICommunicationC.hpp"
 #include "UnitComponent/IExecutorC.hpp"
 #include "UnitComponent/ITaskManagerC.hpp"
-#include <charconv>
 #include <cstdarg>
 #include <type_traits>
 namespace swarm {
 /**
- * @brief Interface of the basic swarm unit(agent)
+ * @brief Interface of the swarm unit(agent)
+ *
+ */
+class ISwarmUnit {
+public:
+  ISwarmUnit() = default;
+  virtual void init() = 0;
+  virtual void iter() = 0;
+  virtual ~ISwarmUnit() = default;
+};
+/**
+ * @brief Class of the basic swarm unit(agent)
  *
  * @tparam CommunicationCT is a communication component of agent. Must be
  * derived from ICommunicationUnitC.
@@ -20,7 +30,7 @@ namespace swarm {
 template <class UnitParamsT, template <class> class TaskManagerCTT,
           template <class> class CommunicationCTT,
           template <class> class ExecutorCTT>
-class BasicSwarmUnit {
+class BasicSwarmUnit : public ISwarmUnit {
 public:
   using UnitT = BasicSwarmUnit<UnitParamsT, TaskManagerCTT, CommunicationCTT,
                                ExecutorCTT>;
@@ -52,25 +62,25 @@ private:
           _ExecutorT>::value,
       "Template ExecutorCTT must be derived from IExecutorUnitC");
 
-  _TaskManagerT *_taskManagerC;
-  _CommunicationT *_communicationC;
-  _ExecutorT *_executorC;
+  _TaskManagerT &_taskManagerC;
+  _CommunicationT &_communicationC;
+  _ExecutorT &_executorC;
   UnitParamsT _params;
 
 public:
   BasicSwarmUnit()
-      : _taskManagerC(new _TaskManagerT(this)),
-        _communicationC(new _CommunicationT(this)),
-        _executorC(new _ExecutorT(this)) {}
+      : _taskManagerC(*new _TaskManagerT(this)),
+        _communicationC(*new _CommunicationT(this)),
+        _executorC(*new _ExecutorT(this)) {}
   void init() {
-    _taskManagerC->init();
-    _communicationC->init();
-    _executorC->init();
+    _taskManagerC.init();
+    _communicationC.init();
+    _executorC.init();
   }
   void iter() {
-    _taskManagerC->iter();
-    _communicationC->iter();
-    _executorC->iter();
+    _taskManagerC.iter();
+    _communicationC.iter();
+    _executorC.iter();
   }
   virtual ~BasicSwarmUnit() = default;
 };
