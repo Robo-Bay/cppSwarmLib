@@ -1,5 +1,4 @@
 #pragma once
-#include <type_traits>
 namespace swarm {
 /**
  * @brief the interface of swarm unit or component params.
@@ -7,24 +6,19 @@ namespace swarm {
  */
 struct IParams {
   IParams() = default;
-  virtual ~IParams() = 0;
+  virtual ~IParams() = default;
 };
-
 struct EmptyParams : public IParams {
   EmptyParams() = default;
-  ~EmptyParams() final = default;
+  ~EmptyParams() = default;
 };
-
-/**
- * @brief Parameters for the task. They are set once when a task is set.
- *
- */
 struct ITaskParams : public IParams {
   ITaskParams() = default;
-  virtual ~ITaskParams() = 0;
+  virtual ~ITaskParams() = default;
 };
-struct EmptyTaskParams : public IParams {
+struct EmptyTaskParams : public ITaskParams {
   EmptyTaskParams() = default;
-  ~EmptyTaskParams() override = default;
+  ~EmptyTaskParams() = default;
 };
+
 } // namespace swarm

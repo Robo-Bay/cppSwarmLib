@@ -3,9 +3,11 @@
 #include "UnitComponent/ICommunicationC.hpp"
 #include "UnitComponent/IExecutorC.hpp"
 #include "UnitComponent/ITaskManagerC.hpp"
-#include "UnitComponent/IUnitComponent.hpp"
 #include <type_traits>
 namespace swarm {
+template <class ParamsT, class SwarmUnitT> class ICommunicationUnitC;
+template <class ParamsT, class SwarmUnitT> class IExecutorUnitC;
+template <class ParamsT, class SwarmUnitT> class ITaskManagerUnitC;
 
 /**
  * @brief Interface of the basic swarm unit(agent)
@@ -17,49 +19,51 @@ namespace swarm {
  * @tparam ExecutorCT is a executor component of agent. Must be derived from
  * IExecutorUnitC.
  */
-template <class UnitParamsT, template <class, class> class TaskManagerCT,
-          template <class, class> class CommunicationCT,
-          template <class, class> class ExecutorCT>
+template <class UnitParamsT, template <class> class TaskManagerCTT,
+          template <class> class CommunicationCTT,
+          template <class> class ExecutorCTT>
 class BasicSwarmUnit {
-  using UnitT =
-      BasicSwarmUnit<UnitParamsT, CommunicationCT, TaskManagerCT, ExecutorCT>;
+public:
+  using UnitT = BasicSwarmUnit<UnitParamsT, TaskManagerCTT, CommunicationCTT,
+                               ExecutorCTT>;
+  using _TaskManagerT = TaskManagerCTT<UnitT>;
+  using _CommunicationT = CommunicationCTT<UnitT>;
+  using _ExecutorT = ExecutorCTT<UnitT>;
+
+private:
   static_assert(std::is_base_of<IParams, UnitParamsT>::value,
                 "UnitParams must be derived from IParams");
-  // Проверка, что ExecutorCT<UnitT> является наследником IExecutorUnitC
-  static_assert(
-      std::is_base_of<
-          IExecutorUnitC<UnitT, ExecutorCT<UnitT>::IUnitComponent::ParamsT>,
-          ExecutorCT<UnitT>>::value,
-      "ExecutorCT must be derived from IExecutorUnitC");
 
-  // Проверка, что TaskManagerCT<UnitT> является наследником ITaskManagerUnitC
-  static_assert(
-      std::is_base_of<ITaskManagerUnitC<
-                          UnitT, TaskManagerCT<UnitT>::IUnitComponent::ParamsT>,
-                      TaskManagerCT<UnitT>>::value,
-      "TaskManagerCT must be derived from ITaskManagerUnitC");
-
-  // Проверка, что CommunicationCT<UnitT> является наследником
-  // ICommunicationUnitC
-  static_assert(std::is_base_of<
-                    ICommunicationUnitC<
-                        UnitT, CommunicationCT<UnitT>::IUnitComponent::ParamsT>,
-                    CommunicationCT<UnitT>>::value,
-                "CommunicationCT must be derived from ICommunicationUnitC");
-  CommunicationCT &_communicationC;
-  TaskManagerCT &_taskManagerC;
-  ExecutorCT &_executorC;
-  UnitParamsT &_params;
+  _TaskManagerT *_taskManagerC;
+  _CommunicationT *_communicationC;
+  _ExecutorT *_executorC;
+  UnitParamsT _params;
 
 public:
-  BasicSwarmUnit();
-  BasicSwarmUnit(const UnitParamsT &);
-  BasicSwarmUnit(const UnitParamsT &, const CommunicationCT::ParamsT &,
-                 const TaskManagerCT::ParamsT &, const ExecutorCT::ParamsT &);
-  void virtual init();
-  void virtual iter();
-  // Деструктор
-  virtual ~BasicSwarmUnit() = 0;
+  BasicSwarmUnit()
+      : _taskManagerC(new _TaskManagerT(this)),
+        _communicationC(new _CommunicationT(this)),
+        _executorC(new _ExecutorT(this)) {}
+  void init() {
+    _taskManagerC->init();
+    _communicationC->init();
+    _executorC->init();
+  }
+  void iter() {
+    _taskManagerC->iter();
+    _communicationC->iter();
+    _executorC->iter();
+  }
+  virtual ~BasicSwarmUnit() = default;
 };
 
+class EmptySwarmUnit
+    : public BasicSwarmUnit<EmptyParams, EmptyTaskManagerC, EmptyCommunicationC,
+                            EmptyExecutorC> {
+public:
+  EmptySwarmUnit()
+      : BasicSwarmUnit<EmptyParams, EmptyTaskManagerC, EmptyCommunicationC,
+                       EmptyExecutorC>() {}
+  ~EmptySwarmUnit() = default;
+};
 } // namespace swarm
