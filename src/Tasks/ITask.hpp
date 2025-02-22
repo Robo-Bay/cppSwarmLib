@@ -10,27 +10,24 @@ static constexpr uint32_t MaximumTaskLvl = 256;
  * @brief Parameters for the task. They are set once when a task is set.
  *
  */
-template <typename SwarmUnitT, typename TaskParamsT> class IBaseTask {
-  // static_assert(
-  //     std::is_base_of<BasicSwarmUnit<typename SwarmUnitT::UnitParamsT,
-  //                                    typename SwarmUnitT::CommunicationCT,
-  //                                    typename SwarmUnitT::TaskManagerCT,
-  //                                    typename SwarmUnitT::ExecutorCT>,
-  //                     SwarmUnitT>::value,
-  //     "SwarnUnitT must be derived of BasicSwarmUnit");
-  static_assert(std::is_base_of<ITaskParams, TaskParamsT>::value,
-                "TaskParamsT must be derived by ITaskParams");
+template <typename SwarmUnitT> class IBaseTask {
+  static_assert(std::is_base_of<typename SwarmUnitT::BasicSwarmUnit::UnitT,
+                                SwarmUnitT>::value,
+                "SwarmUnitT must be derived from BasicSwarmUnit");
   SwarmUnitT *_unit;
-  const TaskParamsT &_params;
+  const ITaskParams &_params;
+  bool is_full_decomposed;
 
 public:
-  IBaseTask(SwarmUnitT *u, const TaskParamsT &p) : _unit(u), _params(p) {}
+  IBaseTask(SwarmUnitT *u, const ITaskParams &p) : _unit(u), _params(p) {}
   virtual constexpr uint32_t get_lvl() const = 0;
   virtual ~IBaseTask() = default;
 };
 
 template <uint32_t Lvl, typename SwarmUnitT, typename TaskParamsT>
-class ITask : public IBaseTask<SwarmUnitT, TaskParamsT> {
+class ITask : public IBaseTask<SwarmUnitT> {
+  static_assert(std::is_base_of<ITaskParams, TaskParamsT>::value,
+                "TaskParamsT must be derived by ITaskParams");
   static_assert(Lvl < MaximumTaskLvl, "Lvl of task must be < MaximumTaskLvl");
 
 public:
