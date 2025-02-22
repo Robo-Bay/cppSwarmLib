@@ -19,9 +19,11 @@ template <typename SwarmUnitT> class IBaseTask {
   bool is_full_decomposed;
 
 public:
+  using TaskManager = typename SwarmUnitT::BasicSwarmUnit::_TaskManagerT;
   IBaseTask(SwarmUnitT *u, const ITaskParams &p) : _unit(u), _params(p) {}
   virtual constexpr uint32_t get_lvl() const = 0;
   virtual ~IBaseTask() = default;
+  friend TaskManager;
 };
 
 template <uint32_t Lvl, typename SwarmUnitT, typename TaskParamsT>
