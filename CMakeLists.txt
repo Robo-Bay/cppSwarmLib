@@ -7,6 +7,25 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)         # Disable compiler-specific extensions
 
+add_compile_options( # Add options for compile
+    -Werror
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Wcast-align
+    -Wcast-qual
+    -Wconversion
+    -Wctor-dtor-privacy
+    -Wenum-compare
+    -Wfloat-equal
+    -Wnon-virtual-dtor
+    -Wold-style-cast
+    -Woverloaded-virtual
+    -Wredundant-decls
+    -Wsign-conversion
+    -Wsign-promo
+)
+
 # Create interface library (header-only)
 add_library(cppSwarmLib INTERFACE)
 
