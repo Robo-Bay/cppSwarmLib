@@ -1,7 +1,14 @@
+#include <boost/version.hpp>
+#include <cassert>
 #include <cppSwarmLib/src/Swarm.hpp>
+#include <cppSwarmLib/src/SwarmUnit.hpp>
+#include <cppSwarmLib/src/Tasks/ITask.hpp>
+#include <iostream>
+
+using namespace swarm;
 int main() {
-  swarm::EmptySwarmUnit u;
-  swarm::BasicSwarmUnit<swarm::EmptyParams, swarm::EmptyTaskManagerC,
-                        swarm::EmptyCommunicationC, swarm::EmptyExecutorC>
-      a;
+  for (int i = 0; i < MaximumTaskLvl; i++) {
+    IBaseTask<EmptySwarmUnit> t(i, nullptr, EmptyTaskParams());
+    assert(t.get_lvl() == i);
+  }
 }

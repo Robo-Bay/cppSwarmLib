@@ -20,5 +20,4 @@ struct EmptyTaskParams : public ITaskParams {
   EmptyTaskParams() = default;
   ~EmptyTaskParams() = default;
 };
-
 } // namespace swarm

@@ -1,7 +1,7 @@
 # How to install?
 
 ```bash
-mkdri build && cd muild
+mkdri build && cd build 
 cmake ..
 cmake --build .
 cmake --install .

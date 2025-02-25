@@ -36,6 +36,53 @@ target_include_directories(cppSwarmLib
         $<INSTALL_INTERFACE:include>                     # For install tree
 )
 
+# Опция для включения тестов
+option(BUILD_TESTS "Build test executables" OFF)
+
+if(BUILD_TESTS)
+    # Поиск Boost с компонентом Unit Test Framework
+    find_package(Boost 1.71 REQUIRED COMPONENTS unit_test_framework)
+    
+    # Проверка успешного поиска Boost
+    if(Boost_FOUND)
+        # Включение системы тестирования CMake
+        enable_testing()
+        
+        # Найти все файлы .cpp в директории tests
+        file(GLOB TEST_SOURCES "src/Tests/*.cpp")
+        
+        # Проверить, что найдены тестовые файлы
+        if(NOT TEST_SOURCES)
+            message(WARNING "No test files found in the 'tests' directory!")
+        else()
+            # Добавление исполняемого файла для тестов
+            add_executable(cppSwarmLibTests
+                ${TEST_SOURCES}  # Все найденные .cpp файлы
+            )
+            
+            # Настройка линковки тестов
+            target_link_libraries(cppSwarmLibTests
+                PRIVATE
+                    cppSwarmLib
+                    Boost::unit_test_framework
+            )
+            
+            # Добавление теста в CTest
+            add_test(
+                NAME cppSwarmLibUnitTests
+                COMMAND cppSwarmLibTests
+            )
+            
+            # Дополнительные настройки для тестов
+            target_compile_definitions(cppSwarmLibTests PRIVATE BOOST_TEST_DYN_LINK)
+            
+            # Отключение -Werror для тестов (опционально)
+            target_compile_options(cppSwarmLibTests PRIVATE -Wno-error)
+        endif()
+    endif()
+endif()
+
+
 # Install headers preserving directory structure
 install(
     DIRECTORY 
@@ -45,7 +92,7 @@ install(
     DESTINATION 
         include/cppSwarmLib
     FILES_MATCHING
-        PATTERN "*.hpp"
+        PATTERN "src/*.hpp"
         PATTERN "CMakeLists.txt" EXCLUDE  # Exclude CMakeLists from installation
 )
 
