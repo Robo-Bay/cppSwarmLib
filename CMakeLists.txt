@@ -74,7 +74,8 @@ if(BUILD_TESTS)
             )
             
             # Дополнительные настройки для тестов
-            target_compile_definitions(cppSwarmLibTests PRIVATE BOOST_TEST_DYN_LINK)
+            # target_compile_definitions(cppSwarmLibTests PRIVATE BOOST_TEST_DYN_LINK)
+            target_compile_definitions(cppSwarmLibTests PRIVATE BOOST_TEST_MAIN)
             
             # Отключение -Werror для тестов (опционально)
             target_compile_options(cppSwarmLibTests PRIVATE -Wno-error)
