@@ -1,12 +1,13 @@
 #pragma once
+#include "../Tasks/ITask.hpp"
 #include "IUnitComponent.hpp"
-#include <cppSwarmLib/src/Tasks/ITask.hpp>
 #include <cstdint>
 #include <deque>
 #include <memory>
 #include <utility>
 
 namespace swarm {
+
 template <class SwarmUnitT>
 class PtrTask : public std::shared_ptr<IBaseTask<SwarmUnitT>> {};
 /**

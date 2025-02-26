@@ -2,20 +2,21 @@
 #include <boost/test/tools/old/interface.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/test/unit_test_suite.hpp>
-#define BOOST_TEST_MAIN // in only one cpp file
+#include "../SwarmUnit.hpp"
 #define BOOST_TEST_MODULE TasksTest
-#include <cppSwarmLib/src/Swarm.hpp>
 
 using namespace swarm;
 BOOST_AUTO_TEST_CASE(TasksTest) {
-  //   for (int i = 0; i < MaximumTaskLvl; i++) {
-  //     IBaseTask<EmptySwarmUnit> t(i, nullptr, EmptyTaskParams());
-  //     BOOST_CHECK_EQUAL(t.get_lvl(), i);
-  //   }
-  BOOST_TEST(1 + 1 == 2);
+  for (auto i = 0; i < MaximumTaskLvl; ++i) {
+    IBaseTask<EmptySwarmUnit> t(i, nullptr, EmptyTaskParams());
+    BOOST_CHECK_EQUAL(t.get_lvl(), i);
+  }
+  BOOST_CHECK_EQUAL(
+      IBaseTask<EmptySwarmUnit>(MaximumTaskLvl, nullptr, EmptyTaskParams())
+          .get_lvl(),
+      MaximumTaskLvl - 1);
+  BOOST_CHECK_EQUAL(
+      IBaseTask<EmptySwarmUnit>(MaximumTaskLvl * 2, nullptr, EmptyTaskParams())
+          .get_lvl(),
+      MaximumTaskLvl - 1);
 }
-// #include <iostream>
-// int main()
-// {
-//     std::cout << "as;gjlasfg" << std::endl;
-// }

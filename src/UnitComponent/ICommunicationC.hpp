@@ -6,8 +6,8 @@ class ICommunicationMessage {};
 /**
  * @brief Interface of the communication swarm unit component. In this component
  * unit communicate with other units and swarm.
- * 
-* TODO matvey
+ *
+ * TODO matvey
  */
 template <class ParamsT, class SwarmUnitT>
 class ICommunicationUnitC : public IUnitComponent<ParamsT, SwarmUnitT> {

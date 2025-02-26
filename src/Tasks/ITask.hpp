@@ -1,18 +1,19 @@
 #pragma once
-
 #include "../Params.hpp"
-#include "../SwarmUnit.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <type_traits>
 namespace swarm {
 static constexpr uint32_t MaximumTaskLvl = 256;
-template <typename SwarmUnitT> class IBaseTask;
-template <uint32_t Lvl, typename SwarmUnitT, typename TaskParamsT> class ITask;
+
 /**
- * @brief Parameters for the task. They are set once when a task is set.
+ * @brief Interface for the task. Task have pointer on SwarmUnit which owns this
+ * task, the const parameters that we set the task with and lvl of task. Lvl is
+ * the the complexity of the task
  *
+ * @tparam SwarmUnitT
  */
-template <typename SwarmUnitT> class IBaseTask {
+template <class SwarmUnitT> class IBaseTask {
   static_assert(std::is_base_of<typename SwarmUnitT::BasicSwarmUnit::UnitT,
                                 SwarmUnitT>::value,
                 "SwarmUnitT must be derived from BasicSwarmUnit");
@@ -22,13 +23,20 @@ template <typename SwarmUnitT> class IBaseTask {
   uint32_t _Lvl;
 
 public:
-  using TaskManager = typename SwarmUnitT::BasicSwarmUnit::_TaskManagerT;
+  /**
+   * @brief Construct a new IBaseTask object
+   *
+   * @param lvl - complexity of the task, <= MaximumTaskLvl
+   * @param u - pointer to unit
+   * @param p - the parameters that task is set
+   */
   IBaseTask(uint32_t lvl, SwarmUnitT *u, const ITaskParams &p)
-      : _Lvl(lvl), _unit(u), _params(p) {}
+      : _Lvl(std::min(lvl, MaximumTaskLvl - 1)), _unit(u), _params(p) {}
   constexpr uint32_t get_lvl() const { return _Lvl; }
   virtual ~IBaseTask() = default;
-  friend TaskManager;
 };
+
+// TODO Decision tree(on TaskParamsT) for decompose task
 
 template <uint32_t Lvl, typename SwarmUnitT, typename TaskParamsT>
 class ITask : public IBaseTask<SwarmUnitT> {
@@ -39,7 +47,7 @@ class ITask : public IBaseTask<SwarmUnitT> {
 public:
   ITask(SwarmUnitT *u, const TaskParamsT &params)
       : IBaseTask<SwarmUnitT>(Lvl, u, params) {}
-  virtual ~ITask() = default;
+    
 };
 
 template <typename SwarmUnitT, typename TaskParamsT>

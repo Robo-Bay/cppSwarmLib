@@ -1,6 +1,5 @@
 #pragma once
 #include "../Params.hpp"
-#include "../SwarmUnit.hpp"
 #include <type_traits>
 namespace swarm {
 template <class UnitParamsT, template <class> class TaskManagerCTT,

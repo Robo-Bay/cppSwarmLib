@@ -1,5 +1,5 @@
 #pragma once
-#include "SwarmUnit.hpp"
+#include <cppSwarmLib/src/SwarmUnit.hpp>
 #include <iterator>
 #include <memory>
 #include <type_traits>

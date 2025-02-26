@@ -1,5 +1,5 @@
 #pragma once
-#include "Params.hpp"
+
 #include "UnitComponent/ICommunicationC.hpp"
 #include "UnitComponent/IExecutorC.hpp"
 #include "UnitComponent/ITaskManagerC.hpp"
