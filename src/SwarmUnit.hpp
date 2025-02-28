@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Params.hpp"
 #include "UnitComponent/ICommunicationC.hpp"
 #include "UnitComponent/IExecutorC.hpp"
 #include "UnitComponent/ITaskManagerC.hpp"
@@ -30,7 +31,7 @@ public:
 template <class UnitParamsT, template <class> class TaskManagerCTT,
           template <class> class CommunicationCTT,
           template <class> class ExecutorCTT>
-class BasicSwarmUnit : public ISwarmUnit {
+class BasicSwarmUnit : public ISwarmUnit, public Parameterizable<UnitParamsT> {
 public:
   using UnitT = BasicSwarmUnit<UnitParamsT, TaskManagerCTT, CommunicationCTT,
                                ExecutorCTT>;
@@ -43,8 +44,6 @@ public:
   using _UnitParamsT = UnitParamsT;
 
 private:
-  static_assert(std::is_base_of<IParams, UnitParamsT>::value,
-                "UnitParams must be derived from IParams");
   static_assert(
       std::is_base_of<ITaskManagerUnitC<
                           typename _TaskManagerT::ITaskManagerUnitC::_P, UnitT>,

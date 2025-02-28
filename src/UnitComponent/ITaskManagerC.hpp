@@ -45,23 +45,6 @@ public:
     _taskDeque.push_front(t);
   }
   /**
-   * @brief Add task in back of deque. The task will be completed last.
-   *
-   */
-  template <uint32_t Lvl, typename TaskParamsT>
-  void add_task_in_back(const ITask<Lvl, SwarmUnitT, TaskParamsT> &t) {
-    add_task_in_back(PtrTask<SwarmUnitT>(t));
-  }
-  /**
-   * @brief Add task in front of deque. The task will be completed first.
-   *
-   */
-  template <uint32_t Lvl, typename TaskParamsT>
-  void add_task_in_front(const ITask<Lvl, SwarmUnitT, TaskParamsT> &t) {
-    add_task_in_front(PtrTask<SwarmUnitT>(t));
-  }
-
-  /**
    * @brief decompose task on front and add subtasks to front of deque
    *
    * @return std::pair<typename TaskDeque<SwarmUnitT>::const_iterator,

@@ -2,6 +2,7 @@
 #include "../Params.hpp"
 #include <algorithm>
 #include <cstdint>
+#include <sys/types.h>
 #include <type_traits>
 namespace swarm {
 static constexpr uint32_t MaximumTaskLvl = 256;
@@ -20,7 +21,6 @@ template <class SwarmUnitT> class IBaseTask {
   SwarmUnitT *_unit;
   const ITaskParams &_params;
   bool is_full_decomposed;
-  uint32_t _Lvl;
 
 public:
   /**
@@ -31,23 +31,41 @@ public:
    * @param p - the parameters that task is set
    */
   IBaseTask(uint32_t lvl, SwarmUnitT *u, const ITaskParams &p)
-      : _Lvl(std::min(lvl, MaximumTaskLvl - 1)), _unit(u), _params(p) {}
-  constexpr uint32_t get_lvl() const { return _Lvl; }
+      : _unit(u), _params(p) {}
+  virtual constexpr uint32_t get_lvl() const = 0;
+
   virtual ~IBaseTask() = default;
 };
 
 // TODO Decision tree(on TaskParamsT) for decompose task
+/**
+ * @brief Interface of task decision tree. Use when decompose task.
+ *
+ */
+template <class TaskT> class ITaskDecisionTree {
+  static_assert(
+      std::is_base_of<IBaseTask<typename TaskT::SwarmUnitT>, TaskT>::value,
+      "TaskT must be derived of IBaseTask");
+};
 
-template <uint32_t Lvl, typename SwarmUnitT, typename TaskParamsT>
+/**
+ * @brief The task class.
+ *
+ * @tparam Lvl - complexity of the task, <= MaximumTaskLvl
+ * @tparam SwarmUnitT
+ * @tparam TaskParamsT
+ */
+template <uint32_t Lvl, typename SwarmUnitT,
+          typename TaskParamsT = EmptyTaskParams>
 class ITask : public IBaseTask<SwarmUnitT> {
   static_assert(std::is_base_of<ITaskParams, TaskParamsT>::value,
                 "TaskParamsT must be derived by ITaskParams");
   static_assert(Lvl < MaximumTaskLvl, "Lvl of task must be < MaximumTaskLvl");
 
 public:
-  ITask(SwarmUnitT *u, const TaskParamsT &params)
+  constexpr uint32_t get_lvl() const override { return Lvl; }
+  ITask(SwarmUnitT *u, const TaskParamsT &params = TaskParamsT())
       : IBaseTask<SwarmUnitT>(Lvl, u, params) {}
-    
 };
 
 template <typename SwarmUnitT, typename TaskParamsT>

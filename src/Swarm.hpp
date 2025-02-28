@@ -1,5 +1,6 @@
 #pragma once
-#include <cppSwarmLib/src/SwarmUnit.hpp>
+#include "Params.hpp"
+#include "SwarmUnit.hpp"
 #include <iterator>
 #include <memory>
 #include <type_traits>
@@ -28,12 +29,14 @@ public:
   virtual ~ISwarmUnitsContainer() = default;
 };
 /**
- * @brief The main Swarm class for the multiagent and swarm systems. The shell above SwarmUnitContainer
- * 
+ * @brief The main Swarm class for the multiagent and swarm systems. The shell
+ * above SwarmUnitContainer
+ *
  * @tparam SwarmUnitsContainerT container what contains the members of swarm
  * @tparam SwarmParamsT parameters of the swarm
  */
-template <class SwarmUnitsContainerT, class SwarmParamsT> class Swarm {
+template <class SwarmUnitsContainerT, class SwarmParamsT>
+class Swarm : public Parameterizable<SwarmParamsT> {
   static_assert(std::is_base_of<IParams, SwarmParamsT>::value,
                 "UnitParams must be derived from IParams");
   static_assert(

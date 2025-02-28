@@ -11,9 +11,7 @@ template <class SwarmUnitT> class EmptyUnitComponent;
  * @brief The basic interface of the basic swarm unit component
  *
  */
-template <class ParamsT, class SwarmUnitT> class IUnitComponent {
-  static_assert(std::is_base_of<IParams, ParamsT>::value,
-                "Params must be derived of IParams");
+template <class ParamsT, class SwarmUnitT> class IUnitComponent : public Parameterizable<ParamsT>{
 
   static_assert(std::is_base_of<typename SwarmUnitT::BasicSwarmUnit::UnitT,
                                 SwarmUnitT>::value,
