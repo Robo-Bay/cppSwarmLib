@@ -73,7 +73,7 @@ public:
 
   void full_decompose_task(PtrTask<SwarmUnitT> task) {
     while (task.is_full_decomposed) {
-      // decompose
+      // decomposfe
     }
   }
 

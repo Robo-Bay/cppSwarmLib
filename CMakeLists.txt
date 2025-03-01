@@ -50,6 +50,8 @@ if(BUILD_TESTS)
         
         # Найти все файлы .cpp в директории tests
         file(GLOB TEST_SOURCES "src/Tests/*.cpp")
+        list(REMOVE_ITEM TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Tests/test_main.cpp") # Если уже есть
+        list(APPEND TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Tests/test_main.cpp")
         
         # Проверить, что найдены тестовые файлы
         if(NOT TEST_SOURCES)
@@ -74,8 +76,8 @@ if(BUILD_TESTS)
             )
             
             # Дополнительные настройки для тестов
-            # target_compile_definitions(cppSwarmLibTests PRIVATE BOOST_TEST_DYN_LINK)
-            target_compile_definitions(cppSwarmLibTests PRIVATE BOOST_TEST_MAIN)
+            target_compile_definitions(cppSwarmLibTests PRIVATE BOOST_TEST_DYN_LINK)
+            # target_compile_definitions(cppSwarmLibTests PRIVATE BOOST_TEST_MAIN )
             
             # Отключение -Werror для тестов (опционально)
             target_compile_options(cppSwarmLibTests PRIVATE -Wno-error)
