@@ -38,15 +38,9 @@ public:
 };
 
 // TODO Decision tree(on TaskParamsT) for decompose task
-/**
- * @brief Interface of task decision tree. Use when decompose task.
- *
- */
-template <class TaskT> class ITaskDecisionTree {
-  static_assert(
-      std::is_base_of<IBaseTask<typename TaskT::SwarmUnitT>, TaskT>::value,
-      "TaskT must be derived of IBaseTask");
-};
+//   static_assert(
+//       std::is_base_of<IBaseTask<typename TaskT::SwarmUnitT>, TaskT>::value,
+//       "TaskT must be derived of IBaseTask");
 
 /**
  * @brief The task class.
