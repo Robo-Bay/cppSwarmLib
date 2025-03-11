@@ -145,4 +145,5 @@ ipch/
 # Visual Studio Trace Files
 *.e2e
 
+.cache
 Swarm-Algorithms-Expirements-

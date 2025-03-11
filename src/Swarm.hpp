@@ -13,21 +13,25 @@ namespace swarm {
  * @brief Link on swarm unit(agent), used in SwarmUnitContainer in Swarm class.
  *
  */
-class SwarmUnitLink : public std::shared_ptr<ISwarmUnit> {
+template <typename IUnitT = ISwarmUnit>
+class SwarmUnitLink : public std::shared_ptr<IUnitT> {
+  static_assert(std::is_base_of<ISwarmUnit, IUnitT>::value,
+                "IUnitT must be derived from ISwarmUnit");
+
 public:
   template <typename SwarmUnitT>
-  SwarmUnitLink(SwarmUnitT *u) : std::shared_ptr<ISwarmUnit>(u) {
-    static_assert(std::is_base_of<ISwarmUnit, SwarmUnitT>::value,
-                  "SwarmUnitT must be derived from ISwarmUnit");
+  SwarmUnitLink(SwarmUnitT *u) : std::shared_ptr<IUnitT>(u) {
+    static_assert(std::is_base_of<ISwarmUnit, IUnitT>::value,
+                  "SwarmUnitT must be derived from IUnitT");
   }
-  using std::shared_ptr<ISwarmUnit>::shared_ptr;
+  using std::shared_ptr<IUnitT>::shared_ptr;
 };
 
 /**
  * @brief Interface of swarm unit container, used in Swarm class
  *
  */
-class ISwarmUnitsContainer {
+template <typename IUnitT = ISwarmUnit> class ISwarmUnitsContainer {
 public:
   /**
    * @brief Construct a new ISwarmUnitsContainer object and try reserve size
@@ -37,8 +41,8 @@ public:
   ISwarmUnitsContainer(std::size_t size) {}
   ISwarmUnitsContainer() {}
   virtual ~ISwarmUnitsContainer() = default;
-  virtual void add_unit(SwarmUnitLink unit) = 0;
-  virtual void for_each(std::function<void(ISwarmUnit &)>) const = 0;
+  virtual void add_unit(SwarmUnitLink<IUnitT> unit) = 0;
+  virtual void for_each(std::function<void(IUnitT &)>) const = 0;
   virtual void init() = 0;
   virtual void iter() = 0;
   virtual std::size_t size() const = 0;
@@ -47,21 +51,22 @@ public:
 /**
  * @brief Реализация контейнера на основе std::vector
  */
-class SwarmVectorContainer : public ISwarmUnitsContainer {
-  std::vector<SwarmUnitLink> units_;
+template <typename IUnitT = ISwarmUnit>
+class SwarmVectorContainer : public ISwarmUnitsContainer<IUnitT> {
+  std::vector<SwarmUnitLink<IUnitT>> units_;
 
 public:
   SwarmVectorContainer(std::size_t size)
-      : units_(), ISwarmUnitsContainer(size) {
+      : units_(), ISwarmUnitsContainer<IUnitT>(size) {
     units_.reserve(size);
   }
 
-  SwarmVectorContainer() : ISwarmUnitsContainer() {}
-  void add_unit(SwarmUnitLink unit) override {
+  SwarmVectorContainer() : ISwarmUnitsContainer<IUnitT>() {}
+  void add_unit(SwarmUnitLink<IUnitT> unit) override {
     units_.push_back(std::move(unit));
   }
 
-  void for_each(std::function<void(ISwarmUnit &)> action) const override {
+  void for_each(std::function<void(IUnitT &)> action) const override {
     for (const auto &unit : units_) {
       if (unit)
         action(*unit);
@@ -83,28 +88,32 @@ public:
 /**
  * @brief Реализация контейнера на основе std::unordered_set
  */
-class SwarmUnorderedSetContainer : public ISwarmUnitsContainer {
+template <typename IUnitT = ISwarmUnit>
+class SwarmUnorderedSetContainer : public ISwarmUnitsContainer<IUnitT> {
   struct Hash {
-    size_t operator()(const SwarmUnitLink &ptr) const {
-      return std::hash<ISwarmUnit *>()(ptr.get());
+    size_t operator()(const SwarmUnitLink<IUnitT> &ptr) const {
+      return std::hash<IUnitT *>()(ptr.get());
     }
   };
 
   struct Equal {
-    bool operator()(const SwarmUnitLink &a, const SwarmUnitLink &b) const {
+    bool operator()(const SwarmUnitLink<IUnitT> &a,
+                    const SwarmUnitLink<IUnitT> &b) const {
       return a.get() == b.get();
     }
   };
 
-  std::unordered_set<SwarmUnitLink, Hash, Equal> units_;
+  std::unordered_set<SwarmUnitLink<IUnitT>, Hash, Equal> units_;
 
 public:
   SwarmUnorderedSetContainer(std::size_t size)
-      : units_(size), ISwarmUnitsContainer(size) {}
-  SwarmUnorderedSetContainer() : ISwarmUnitsContainer() {}
-  void add_unit(SwarmUnitLink unit) override { units_.insert(std::move(unit)); }
+      : units_(size), ISwarmUnitsContainer<IUnitT>(size) {}
+  SwarmUnorderedSetContainer() : ISwarmUnitsContainer<IUnitT>() {}
+  void add_unit(SwarmUnitLink<IUnitT> unit) override {
+    units_.insert(std::move(unit));
+  }
 
-  void for_each(std::function<void(ISwarmUnit &)> action) const override {
+  void for_each(std::function<void(IUnitT &)> action) const override {
     for (const auto &unit : units_) {
       if (unit)
         action(*unit);
@@ -130,22 +139,29 @@ public:
  * @tparam SwarmUnitsContainerT container what contains the members of swarm
  * @tparam SwarmParamsT parameters of the swarm
  */
-template <class SwarmUnitsContainerT, class SwarmParamsT>
+template <template <class> class SwarmUnitsContainerT, class SwarmParamsT,
+          class IUnitT = ISwarmUnit>
 class Swarm : public Parameterizable<SwarmParamsT> {
   static_assert(std::is_base_of<IParams, SwarmParamsT>::value,
                 "UnitParams must be derived from IParams");
   static_assert(
-      std::is_base_of<ISwarmUnitsContainer, SwarmUnitsContainerT>::value,
+      std::is_base_of<ISwarmUnitsContainer<IUnitT>,
+                      SwarmUnitsContainerT<IUnitT>>::value,
       "SwarmUnitsContainerT must me derived from ISwarmUnitsContainer");
+  static_assert(std::is_base_of<ISwarmUnit, IUnitT>::value,
+                "IUnitT must be derived from ISwarmUnit");
 
-  SwarmUnitsContainerT _Units;
+  SwarmUnitsContainerT<IUnitT> _Units;
   SwarmParamsT _Params;
 
 public:
   Swarm() = default;
   Swarm(const SwarmParamsT &params) : _Params(params) {}
   virtual void init() { _Units.init(); }
-  virtual void iter() { _Units().iter(); }
+  virtual void iter() { _Units.iter(); }
+  void for_each(std::function<void(IUnitT &)> action) {
+    _Units.for_each(action);
+  }
   virtual ~Swarm() = default;
 };
 } // namespace swarm

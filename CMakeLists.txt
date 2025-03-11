@@ -95,7 +95,7 @@ install(
     DESTINATION 
         include/cppSwarmLib
     FILES_MATCHING
-        PATTERN "src/*.hpp"
+        PATTERN "*.hpp"
         PATTERN "CMakeLists.txt" EXCLUDE  # Exclude CMakeLists from installation
 )
 
