@@ -32,8 +32,8 @@ add_library(cppSwarmLib INTERFACE)
 # Add public include directories for consumers
 target_include_directories(cppSwarmLib
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>   # For build tree
-        $<INSTALL_INTERFACE:include>                     # For install tree
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>   # For build tree
+        $<INSTALL_INTERFACE:include/cppSwarmLib>                     # For install tree
 )
 
 # Опция для включения тестов
@@ -89,9 +89,9 @@ endif()
 # Install headers preserving directory structure
 install(
     DIRECTORY 
-        ${CMAKE_CURRENT_SOURCE_DIR}/Tasks/
-        ${CMAKE_CURRENT_SOURCE_DIR}/UnitComponent/
-        ${CMAKE_CURRENT_SOURCE_DIR}/
+        src/
+        src/Tasks/
+        src/UnitComponent/
     DESTINATION 
         include/cppSwarmLib
     FILES_MATCHING
