@@ -46,6 +46,7 @@ public:
   virtual void init() = 0;
   virtual void iter() = 0;
   virtual std::size_t size() const = 0;
+  virtual std::size_t reserved_size() const = 0;
 };
 
 /**
@@ -83,6 +84,7 @@ public:
     }
   }
   std::size_t size() const override { return units_.size(); }
+  std::size_t reserved_size() const override { return units_.capacity(); };
 };
 
 /**
@@ -120,6 +122,7 @@ public:
     }
   }
   std::size_t size() const override { return units_.size(); }
+  std::size_t reserved_size() const override { return units_.capacity(); }
   void init() override {
     for (const auto &unit : units_) {
       unit->init();
@@ -151,12 +154,14 @@ class Swarm : public Parameterizable<SwarmParamsT> {
   static_assert(std::is_base_of<ISwarmUnit, IUnitT>::value,
                 "IUnitT must be derived from ISwarmUnit");
 
+protected:
   SwarmUnitsContainerT<IUnitT> _Units;
   SwarmParamsT _Params;
 
 public:
-  Swarm() = default;
-  Swarm(const SwarmParamsT &params) : _Params(params) {}
+  Swarm(std::size_t sz = 0) : _Units(sz) {}
+  Swarm(const SwarmParamsT &params, std::size_t sz = 0)
+      : _Params(params), _Units(sz) {}
   virtual void init() { _Units.init(); }
   virtual void iter() { _Units.iter(); }
   void for_each(std::function<void(IUnitT &)> action) {

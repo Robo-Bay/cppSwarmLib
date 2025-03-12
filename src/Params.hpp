@@ -28,6 +28,19 @@ struct EmptyTaskParams : public ITaskParams {
 };
 
 /**
+ * @brief Link to global params. When you need the same params for many
+ * Parameterizable objects
+ *
+ * @tparam GlobalParams
+ */
+template <typename GlobalParams> struct LinkToGlobalParams : public IParams {
+  static_assert(std::is_base_of<IParams, GlobalParams>::value,
+                "Global Params must be derived of IParams");
+  LinkToGlobalParams(const GlobalParams &p) : g(p) {}
+  const GlobalParams &g;
+  const GlobalParams *operator->() const { return &g; }
+};
+/**
  * @brief interface of parameterizable object.
  *
  * @tparam ParamsT

@@ -92,6 +92,7 @@ install(
         src/
         src/Tasks/
         src/UnitComponent/
+        Examples/SwarmOfParticles
     DESTINATION 
         include/cppSwarmLib
     FILES_MATCHING

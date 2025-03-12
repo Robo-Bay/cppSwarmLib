@@ -11,18 +11,21 @@ template <class SwarmUnitT> class EmptyUnitComponent;
  * @brief The basic interface of the basic swarm unit component
  *
  */
-template <class ParamsT, class SwarmUnitT> class IUnitComponent : public Parameterizable<ParamsT>{
+template <class ParamsT, class SwarmUnitT>
+class IUnitComponent : public Parameterizable<ParamsT> {
 
   static_assert(std::is_base_of<typename SwarmUnitT::BasicSwarmUnit::UnitT,
                                 SwarmUnitT>::value,
                 "SwarmUnitT must be derived from BasicSwarmUnit");
-  ParamsT _params;
-  SwarmUnitT *_unit;
+
+protected:
+  ParamsT _Params;
+  SwarmUnitT *_U;
 
 public:
   using _P = ParamsT;
-  IUnitComponent(SwarmUnitT *u) : _unit(u) {};
-  IUnitComponent(SwarmUnitT *u, const ParamsT &p) : _unit(u), _params(p) {}
+  IUnitComponent(SwarmUnitT *u) : _U(u) {};
+  IUnitComponent(SwarmUnitT *u, const ParamsT &p) : _U(u), _Params(p) {}
   /**
    * @brief init component, then can iteration
    *

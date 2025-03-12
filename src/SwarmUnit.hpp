@@ -28,9 +28,10 @@ public:
  * @tparam ExecutorCT is a executor component of agent. Must be derived from
  * IExecutorUnitC.
  */
-template <class UnitParamsT, template <class> class TaskManagerCTT,
-          template <class> class CommunicationCTT,
-          template <class> class ExecutorCTT>
+template <class UnitParamsT = EmptyParams,
+          template <class> class TaskManagerCTT = EmptyTaskManagerC,
+          template <class> class CommunicationCTT = EmptyCommunicationC,
+          template <class> class ExecutorCTT = EmptyExecutorC>
 class BasicSwarmUnit : public ISwarmUnit, public Parameterizable<UnitParamsT> {
 public:
   using UnitT = BasicSwarmUnit<UnitParamsT, TaskManagerCTT, CommunicationCTT,
@@ -69,6 +70,10 @@ private:
 public:
   BasicSwarmUnit()
       : _taskManagerC(*new _TaskManagerT(this)),
+        _communicationC(*new _CommunicationT(this)),
+        _executorC(*new _ExecutorT(this)) {}
+  BasicSwarmUnit(const UnitParamsT &p)
+      : _params(p), _taskManagerC(*new _TaskManagerT(this)),
         _communicationC(*new _CommunicationT(this)),
         _executorC(*new _ExecutorT(this)) {}
   void init() {

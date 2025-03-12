@@ -15,6 +15,7 @@ public:
   ICommunicationUnitC(SwarmUnitT *u) : IUnitComponent<ParamsT, SwarmUnitT>(u) {}
   virtual ~ICommunicationUnitC() = default;
 };
+
 template <class SwarmUnitT>
 class EmptyCommunicationC
     : public ICommunicationUnitC<EmptyParams, SwarmUnitT> {
