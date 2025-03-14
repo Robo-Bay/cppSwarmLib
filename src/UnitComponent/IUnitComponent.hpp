@@ -1,12 +1,9 @@
 #pragma once
 #include "../Params.hpp"
+#include "../SwarmUnit.hpp"
 #include <type_traits>
 namespace swarm {
-template <class UnitParamsT, template <class> class TaskManagerCTT,
-          template <class> class CommunicationCTT,
-          template <class> class ExecutorCTT>
-class BasicSwarmUnit;
-template <class SwarmUnitT> class EmptyUnitComponent;
+class ISwarmUnit;
 /**
  * @brief The basic interface of the basic swarm unit component
  *
@@ -14,9 +11,9 @@ template <class SwarmUnitT> class EmptyUnitComponent;
 template <class ParamsT, class SwarmUnitT>
 class IUnitComponent : public Parameterizable<ParamsT> {
 
-  static_assert(std::is_base_of<typename SwarmUnitT::BasicSwarmUnit::UnitT,
-                                SwarmUnitT>::value,
-                "SwarmUnitT must be derived from BasicSwarmUnit");
+  // static_assert(std::is_base_of<ISwarmUnit SwarmUnitT>::value,
+  //               "SwarmUnitT must be derived from ISwarmUnit");
+  static_assert(std::is_base_of<ISwarmUnit, SwarmUnitT>::value, "");
 
 protected:
   ParamsT _Params;
@@ -37,6 +34,7 @@ public:
    */
   virtual void iter() = 0;
   virtual ~IUnitComponent() = default;
+  friend SwarmUnitT;
 };
 
 template <class SwarmUnitT>

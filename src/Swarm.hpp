@@ -3,6 +3,7 @@
 #include "SwarmUnit.hpp"
 #include <cstddef>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <type_traits>
 #include <unordered_set>
@@ -25,6 +26,9 @@ public:
                   "SwarmUnitT must be derived from IUnitT");
   }
   using std::shared_ptr<IUnitT>::shared_ptr;
+  ~SwarmUnitLink() {
+    std::cout << std::shared_ptr<IUnitT>::use_count() << std::endl;
+  }
 };
 
 /**
@@ -64,7 +68,7 @@ public:
 
   SwarmVectorContainer() : ISwarmUnitsContainer<IUnitT>() {}
   void add_unit(SwarmUnitLink<IUnitT> unit) override {
-    units_.push_back(std::move(unit));
+    units_.emplace_back(move(unit));
   }
 
   void for_each(std::function<void(IUnitT &)> action) const override {
@@ -163,6 +167,16 @@ public:
   Swarm(const SwarmParamsT &params, std::size_t sz = 0)
       : _Params(params), _Units(sz) {}
   virtual void init() { _Units.init(); }
+  template <typename T> void init(bool create_reserve_units) {
+    static_assert(std::is_base_of<IUnitT, T>::value,
+                  "T must be derived of IUnitT");
+    if (create_reserve_units) {
+      for (std::size_t i = 0; i < _Units.reserved_size() - _Units.size(); ++i) {
+        _Units.add_unit(SwarmUnitLink<IUnitT>(new T()));
+      }
+    }
+    init();
+  }
   virtual void iter() { _Units.iter(); }
   void for_each(std::function<void(IUnitT &)> action) {
     _Units.for_each(action);

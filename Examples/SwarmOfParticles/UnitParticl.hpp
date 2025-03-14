@@ -1,10 +1,13 @@
 #pragma once
+#include <cppSwarmLib/Params.hpp>
 #include <cppSwarmLib/SwarmOfParticles/SwarmOfParticles.hpp>
 #include <cppSwarmLib/SwarmUnit.hpp>
 #include <cppSwarmLib/UnitComponent/IExecutorC.hpp>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <random>
+#include <type_traits>
 
 namespace swarm {
 template <std::size_t Dim> struct SOPParams;
@@ -15,44 +18,44 @@ public:
   virtual const std::array<double, Dim> &getPositionMaxVal() = 0;
   virtual double getMaxVal() = 0;
 };
-struct Random {
-  std::random_device rd;
-  std::mt19937 gen;
-
-public:
-  Random() : gen(rd()) {}
-  double operator()(double min = 0, double max = 1) {
-    return std::uniform_real_distribution<>(min, max)(gen);
-  }
-};
 template <std::size_t Dim> class ParticlUnit;
 template <typename UT>
 class ParticlExecutor : public IExecutorUnitC<EmptyParams, UT> {
-  void _setRandomPosition() {
-    for (auto i = 0; i < UT::Dim; ++i) {
-      // _U->_Cur_pos[i] =
-      //     _U->_Rnd(_U->_Params->Limits[i].first,
-      //     _U->_Params->Limits[i].second);
-    }
+public:
+  void init() override {}
+  void iter() override {}
+  ParticlExecutor(UT *u) : IExecutorUnitC<EmptyParams, UT>(u) {}
+};
+
+template <std::size_t Dim>
+class ParticlExecutor<ParticlUnit<Dim>>
+    : public IExecutorUnitC<EmptyParams, ParticlUnit<Dim>> {
+
+  inline double rnd(double min, double max) const {
+    return SwarmStaticRandom::rnd(min, max);
   }
 
 public:
-  ParticlExecutor(UT *u) : IExecutorUnitC<EmptyParams, UT>(u) {}
-
-  void init() override {
-    init();
-    _setRandomPosition();
+  void _setRandomPosition() {
+    for (auto i = 0; i < Dim; ++i) {
+      ParticlUnit<Dim> &u = *this->_U;
+      u._Cur_pos[i] =
+          rnd(u._params->Limits[i].first, u._params->Limits[i].second);
+    }
   }
+  void init() override { _setRandomPosition(); }
   void iter() override {}
+  ParticlExecutor(ParticlUnit<Dim> *u)
+      : IExecutorUnitC<EmptyParams, ParticlUnit<Dim>>(u) {}
+  friend ParticlUnit<Dim>;
 };
 
 template <std::size_t Dim>
 class ParticlUnit
-    : public virtual BasicSwarmUnit<LinkToGlobalParams<SOPParams<Dim>>,
-                                    EmptyTaskManagerC, EmptyCommunicationC,
-                                    ParticlExecutor>,
+    : public BasicSwarmUnit<
+          ParticlUnit<Dim>, LinkToGlobalParams<SOPParams<Dim>>,
+          EmptyTaskManagerC, EmptyCommunicationC, ParticlExecutor>,
       public virtual IParticlUnit<Dim> {
-  static inline Random _Rnd;
   std::array<double, Dim> _Cur_pos;
   std::function<double(const std::array<double, Dim> &)> _Func;
 
@@ -60,11 +63,14 @@ class ParticlUnit
   std::array<double, Dim> _PositionMaxVal;
 
 public:
+  using _Base =
+      BasicSwarmUnit<ParticlUnit<Dim>, LinkToGlobalParams<SOPParams<Dim>>,
+                     EmptyTaskManagerC, EmptyCommunicationC, ParticlExecutor>;
   ParticlUnit(const SOPParams<Dim> &p,
               std::function<double(const std::array<double, Dim> &)> func)
       : _Func(func),
-        BasicSwarmUnit<LinkToGlobalParams<SOPParams<Dim>>, EmptyTaskManagerC,
-                       EmptyCommunicationC, ParticlExecutor>(
+        BasicSwarmUnit<ParticlUnit<Dim>, LinkToGlobalParams<SOPParams<Dim>>,
+                       EmptyTaskManagerC, EmptyCommunicationC, ParticlExecutor>(
             LinkToGlobalParams<SOPParams<Dim>>(p)) {}
 
   const std::array<double, Dim> &getPosition() override { return _Cur_pos; }
@@ -75,8 +81,8 @@ public:
   double getMaxVal() override { return _MaxVal; }
 
   void init() override { /*  random spawn*/
-    init();
-    log("init");
+    _Base::init();
+    // log("init");
   }
   void iter() override {
     // iter TaskManager
@@ -86,11 +92,12 @@ public:
 private:
   void log(const std::string &mes) const {
     std::cout << mes << " :";
-    std::cout.precision(2);
+    std::cout.precision(3);
     for (auto i = 0; i < Dim; ++i) {
-      std::cout << " : " << i;
+      std::cout << " : " << std::setw(8) << _Cur_pos[i];
     }
     std::cout << " -> " << _Func(_Cur_pos) << std::endl;
   }
+  friend ParticlExecutor<ParticlUnit<Dim>>;
 };
 } // namespace swarm

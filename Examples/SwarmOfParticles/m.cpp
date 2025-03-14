@@ -1,5 +1,8 @@
+#include <cppSwarmLib/Random.hpp>
+#include <cppSwarmLib/Swarm.hpp>
 #include <cppSwarmLib/SwarmOfParticles/SwarmOfParticles.hpp>
 #include <cppSwarmLib/SwarmOfParticles/UnitParticl.hpp>
+#include <cppSwarmLib/SwarmUnit.hpp>
 #include <numeric>
 constexpr std::size_t Dim = 3;
 int main() {
@@ -9,7 +12,10 @@ int main() {
   p.Limits[2] = {-100.0, 100.0};
 
   auto f = [](const std::array<double, Dim> &a) {
-    return std::accumulate(begin(a), end(a), 0);
+    return std::accumulate(begin(a), end(a), 0.0, [](double acc, double v) {
+      return acc + std::abs(v);
+    }); // sum of abs
   };
-  swarm::ParticlUnit<Dim> u1(p, f);
+  swarm::SwarmOfParticles<Dim> sw(f, p, 1000000);
+  sw.init<swarm::ParticlUnit<Dim>>(true);
 }
