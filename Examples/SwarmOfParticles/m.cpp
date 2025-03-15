@@ -16,6 +16,11 @@ int main() {
       return acc + std::abs(v);
     }); // sum of abs
   };
-  swarm::SwarmOfParticles<Dim> sw(f, p, 1000000);
+  swarm::SwarmOfParticles<Dim> sw(f, p, 3);
   sw.init<swarm::ParticlUnit<Dim>>(true);
+  char imp;
+  do {
+    sw.iter();
+    std::cin >> imp;
+  } while (imp == 'y');
 }

@@ -11,9 +11,12 @@ namespace swarm {
  */
 template <std::size_t Dim> struct SOPParams : public IParams {
   std::array<std::pair<double, double>, Dim> Limits;
-  double omega = 1;
-  double phi_p = 1;
-  double phi_g = 1;
+  double omega = 0.729;
+  double phi_p = 0.149445;
+  double phi_g = 0.149445;
+
+  std::array<double, Dim> BestPos{};
+  double BestVal{};
 };
 
 template <std::size_t Dim>
@@ -33,8 +36,9 @@ public:
     if (create_reserve_units) {
       auto count = _Base::_Units.reserved_size() - _Base::_Units.size();
       for (std::size_t i = 0; i < count; ++i) {
-        _Base::_Units.add_unit(
-            SwarmUnitLink<IParticlUnit<Dim>>(new T(_Base::_Params, Func)));
+        _Base::_Units.add_unit(SwarmUnitLink<IParticlUnit<Dim>>(
+            new T(_Base::_Params, Func, _Base::_Params.BestPos,
+                  _Base::_Params.BestVal)));
       }
     }
     init();
