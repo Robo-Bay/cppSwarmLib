@@ -74,6 +74,11 @@ html/
 *.userosscache
 *.sln.docstates
 
+################################
+###########  CLION  ############
+################################
+.idea
+.clang*
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -144,7 +149,5 @@ ipch/
 
 # Visual Studio Trace Files
 *.e2e
-
+cmake*
 .cache
-SFML/
-.qodo
