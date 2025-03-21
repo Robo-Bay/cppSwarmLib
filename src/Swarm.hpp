@@ -3,7 +3,6 @@
 #include "SwarmUnit.hpp"
 #include <cstddef>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <type_traits>
 #include <unordered_set>
@@ -26,9 +25,6 @@ public:
                   "SwarmUnitT must be derived from IUnitT");
   }
   using std::shared_ptr<IUnitT>::shared_ptr;
-  ~SwarmUnitLink() {
-    std::cout << std::shared_ptr<IUnitT>::use_count() << std::endl;
-  }
 };
 
 /**
