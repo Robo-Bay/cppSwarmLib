@@ -1,85 +1,124 @@
 #include <boost/log/attributes.hpp>
+#include <boost/log/attributes/scoped_attribute.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
+#include <boost/log/expressions/formatters/stream.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/file.hpp>
 #include <string>
+
 namespace swarm {
+    namespace logging = boost::log;
+    namespace sinks = boost::log::sinks;
+    namespace expr = boost::log::expressions;
+    namespace keywords = boost::log::keywords;
 
-class ILogger {
-public:
-  ILogger(const std::string &name = "") {}
-  virtual void init() = 0;
-  virtual void iter() = 0;
-  virtual void info(const std::string &) = 0;
-  virtual void warning(const std::string &) = 0;
-  virtual void error(const std::string &) = 0;
-  virtual void debug(const std::string &) = 0;
-  virtual void fatal(const std::string &) = 0;
-  virtual const std::string &get_name() = 0;
-  virtual ~ILogger() = default;
-};
-class EmptyLogger : public ILogger {
-public:
-  EmptyLogger(const std::string &name = "") : ILogger(name) {}
+    class ILogger {
+    protected:
+        const std::string name;
 
-  void init() override {}
-  void iter() override {}
-  void info(const std::string &) override {}
-  void warning(const std::string &) override {}
-  void error(const std::string &) override {}
-  void debug(const std::string &) override {}
-  void fatal(const std::string &) override {}
-  const std::string &get_name() override {
-    static std::string emptyName;
-    return emptyName;
-  }
-};
+    public:
+        ILogger(const std::string &name = "") : name(name) {}
+        virtual void info(const std::string &, const std::string &from = "") = 0;
+        virtual void warning(const std::string &, const std::string &from = "") = 0;
+        virtual void error(const std::string &, const std::string &from = "") = 0;
+        virtual void debug(const std::string &, const std::string &from = "") = 0;
+        virtual void fatal(const std::string &, const std::string &from = "") = 0;
+        virtual void init() {}
+        virtual void iter() {}
+        [[nodiscard]] const std::string &get_name() const { return name; }
+        virtual ~ILogger() = default;
+    };
+    class EmptyLogger : public ILogger {
+    public:
+        EmptyLogger(const std::string &name = "") : ILogger(name) {}
 
-class BaseLogger : public ILogger { // TODO boost logger
-  bool to_file;
-  bool to_console;
-  const std::string &name;
+        void init() override {}
+        void iter() override {}
+        void info(const std::string &, const std::string & /*from*/) override {}
+        void warning(const std::string &, const std::string & /*from*/) override {}
+        void error(const std::string &, const std::string & /*from*/) override {}
+        void debug(const std::string &, const std::string & /*from*/) override {}
+        void fatal(const std::string &, const std::string & /*from*/) override {}
+    };
 
-public:
-  BaseLogger(const std::string &name = "", bool to_file = false,
-             bool to_console = false)
-      : ILogger(name), to_file(to_file), to_console(to_console), name(name) {}
+    class BaseLogger : public ILogger {
+    private:
+        using file_sink_t = sinks::synchronous_sink<sinks::text_file_backend>; // Исправленный тип
+        using console_sink_t = sinks::synchronous_sink<sinks::text_ostream_backend>;
 
-  virtual ~BaseLogger() override = default;
-  const std::string &get_name() override { return name; }
-};
-class ComponentLogger : public BaseLogger {
-public:
-  ComponentLogger(const std::string &name = "", bool to_file = false,
-                  bool to_console = false)
-      : BaseLogger(name, to_file, to_console) {}
+        boost::shared_ptr<file_sink_t> file_sink;
+        boost::shared_ptr<console_sink_t> console_sink;
+        logging::core_ptr core;
+        logging::sources::severity_logger<logging::trivial::severity_level> lg;
 
-  virtual ~ComponentLogger() override = default;
-};
+    public:
+        BaseLogger(const std::string &logger_name, bool enable_console = true) :
+            ILogger(logger_name), core(logging::core::get()) {
+            file_sink = init_file_sink("logs/_" + logger_name + "_.log");
+            if (enable_console) {
+                console_sink = init_console_sink();
+            }
+            logging::add_common_attributes();
+        }
 
-class UnitLogger : public BaseLogger {
-protected:
-  bool to_other_unit;
+        virtual ~BaseLogger() {
+            // Удаляем sinks из core
+            if (file_sink)
+                core->remove_sink(file_sink);
+            if (console_sink)
+                core->remove_sink(console_sink);
+        }
 
-public:
-  UnitLogger(const std::string &name = "", bool to_file = false,
-             bool to_console = false, bool to_other_unit = false)
-      : BaseLogger(name, to_file, to_console), to_other_unit(to_other_unit) {}
+        void info(const std::string &msg, const std::string &from = "") { log(logging::trivial::info, msg, from); }
+        void warning(const std::string &msg, const std::string &from = "") {
+            log(logging::trivial::warning, msg, from);
+        }
+        void error(const std::string &msg, const std::string &from = "") { log(logging::trivial::error, msg, from); }
+        void debug(const std::string &msg, const std::string &from = "") { log(logging::trivial::debug, msg, from); }
+        void fatal(const std::string &msg, const std::string &from = "") { log(logging::trivial::fatal, msg, from); }
 
-  virtual ~UnitLogger() override = default;
-};
+    private:
+        template<typename SinkT>
+        void set_formatter(SinkT &sink) {
+            sink->set_formatter(expr::stream
+                                << "["
+                                << expr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S")
+                                << "] "
+                                << "[" << logging::trivial::severity << "] "
+                                << "[!" << this->name << "] "
+                                << "[@" << expr::attr<std::string>("From") << "] " << expr::smessage);
+        }
+        boost::shared_ptr<file_sink_t> init_file_sink(const std::string &filename) {
+            auto backend = boost::make_shared<sinks::text_file_backend>(keywords::file_name = filename);
+            auto sink = boost::make_shared<file_sink_t>(backend);
 
-class SwarmLogger : public BaseLogger {
-public:
-  SwarmLogger(const std::string &name = "", bool to_file = false,
-              bool to_console = false)
-      : BaseLogger(name, to_file, to_console) {}
+            set_formatter(sink);
+            sink->set_filter(expr::attr<std::string>("LoggerName") == name);
+            core->add_sink(sink);
+            return sink;
+        }
 
-  virtual ~SwarmLogger() override = default;
-};
+        boost::shared_ptr<console_sink_t> init_console_sink() {
+            auto backend = boost::make_shared<sinks::text_ostream_backend>();
+            backend->add_stream(boost::shared_ptr<std::ostream>(&std::cout, boost::null_deleter()));
+            auto sink = boost::make_shared<console_sink_t>(backend);
 
+            set_formatter(sink);
+            sink->set_filter(expr::attr<std::string>("LoggerName") == name);
+            core->add_sink(sink);
+            return sink;
+        }
+
+        void log(logging::trivial::severity_level level, const std::string &msg, const std::string &from) {
+            BOOST_LOG_SCOPED_THREAD_TAG("LoggerName", name);
+            BOOST_LOG_SCOPED_THREAD_ATTR("From", logging::attributes::constant<std::string>(from));
+            BOOST_LOG_SEV(lg, level) << msg;
+        }
+    };
 } // namespace swarm
