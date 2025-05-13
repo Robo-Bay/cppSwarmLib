@@ -47,9 +47,13 @@ namespace swarm {
         void fatal(const std::string &, const std::string & /*from*/) override {}
     };
 
+    /**
+     * @brief Base Logger use boost. Write in file "logs/_{name}_.log".
+     * if you use it compile with arguments: -lboost_log -lboost_system -lboost_thread -lpthread -lboost_filesystem
+     */
     class BaseLogger : public ILogger {
     private:
-        using file_sink_t = sinks::synchronous_sink<sinks::text_file_backend>; // Исправленный тип
+        using file_sink_t = sinks::synchronous_sink<sinks::text_file_backend>;
         using console_sink_t = sinks::synchronous_sink<sinks::text_ostream_backend>;
 
         boost::shared_ptr<file_sink_t> file_sink;
@@ -75,13 +79,21 @@ namespace swarm {
                 core->remove_sink(console_sink);
         }
 
-        void info(const std::string &msg, const std::string &from = "") { log(logging::trivial::info, msg, from); }
-        void warning(const std::string &msg, const std::string &from = "") {
+        void info(const std::string &msg, const std::string &from = "") final {
+            log(logging::trivial::info, msg, from);
+        }
+        void warning(const std::string &msg, const std::string &from = "") final {
             log(logging::trivial::warning, msg, from);
         }
-        void error(const std::string &msg, const std::string &from = "") { log(logging::trivial::error, msg, from); }
-        void debug(const std::string &msg, const std::string &from = "") { log(logging::trivial::debug, msg, from); }
-        void fatal(const std::string &msg, const std::string &from = "") { log(logging::trivial::fatal, msg, from); }
+        void error(const std::string &msg, const std::string &from = "") final {
+            log(logging::trivial::error, msg, from);
+        }
+        void debug(const std::string &msg, const std::string &from = "") final {
+            log(logging::trivial::debug, msg, from);
+        }
+        void fatal(const std::string &msg, const std::string &from = "") final {
+            log(logging::trivial::fatal, msg, from);
+        }
 
     private:
         template<typename SinkT>

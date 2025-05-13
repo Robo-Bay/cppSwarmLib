@@ -151,3 +151,4 @@ ipch/
 *.e2e
 cmake*
 .cache
+.qodo
